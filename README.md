@@ -1,5 +1,7 @@
 # This tool lets you easily convert MOD files from DVD-Quality digital camcorders (Canon, Panasonic, JVC) into deinterlaced MP4 (h264) videofiles.
-<img width="440" height="440" alt="75edaa19-737e-409f-bb0e-e510011bd486_removalai_preview" src="https://github.com/user-attachments/assets/57052a27-5671-48c3-bb53-2331ce8b72d0" />
+<img width="300" height="300" alt="Camcorder Canon Legria" src="https://github.com/user-attachments/assets/b698a621-b364-4214-a3eb-fad6dc39f37f" /> <img width="300" height="300" alt="75edaa19-737e-409f-bb0e-e510011bd486_removalai_preview" src="https://github.com/user-attachments/assets/57052a27-5671-48c3-bb53-2331ce8b72d0" /> <img width="300" height="300" alt="Camcorder JVC Everio" src="https://github.com/user-attachments/assets/0bbf1875-46de-4551-a792-d8d37a51b4ef" />
+
+
 
 ## **WARNING: THIS TOOL ONLY SUPPORTS PAL INTERLACED VIDEOFILES, NTSC SUPPORT IS YET TO BE IMPLEMENTED AS OF VERSION 1.3 !!!**
 
