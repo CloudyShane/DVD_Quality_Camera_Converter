@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов для изменения сведений,
 // связанных со сборкой.
-[assembly: AssemblyTitle("QTGMC + FFMPEG AutoScript Tool for Panasonic SDR-S7")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("DVD Quality Camera Converter")]
+[assembly: AssemblyDescription("Automated Conversion Tool from MOD files into MP4 (h264)")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Cloudy Shane")]
-[assembly: AssemblyProduct("QTGMC + FFMPEG AutoScript Tool for Panasonic SDR-S7")]
+[assembly: AssemblyProduct("DVD Quality Camera Converter")]
 [assembly: AssemblyCopyright("Cloudy Shane, 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -33,6 +33,6 @@ using System.Runtime.InteropServices;
 // Можно задать все значения или принять номера сборки и редакции по умолчанию 
 // используя "*", как показано ниже:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.3")]
-[assembly: AssemblyFileVersion("1.3")]
+[assembly: AssemblyVersion("1.3.1.0")]
+[assembly: AssemblyFileVersion("1.3.1.0")]
 [assembly: NeutralResourcesLanguage("en")]
