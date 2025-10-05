@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34322.80
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QTGMC_FFMPEG_GUI", "QTGMC_FFMPEG_GUI.csproj", "{EAABB49B-9DF3-419D-B1D2-2F0AE8A2A241}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DVDQCC", "DVDQCC.csproj", "{EAABB49B-9DF3-419D-B1D2-2F0AE8A2A241}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

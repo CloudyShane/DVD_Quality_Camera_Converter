@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace QTGMC_FFMPEG_GUI
+namespace DVDQCC
 {
     internal static class Program
     {
