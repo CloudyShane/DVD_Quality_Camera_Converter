@@ -49,15 +49,15 @@
             this.sdr7_batch_source_file = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.aspectSelector43 = new System.Windows.Forms.RadioButton();
+            this.aspectSelector169 = new System.Windows.Forms.RadioButton();
             this.button_set_dgindex_folder = new System.Windows.Forms.Button();
             this.button_set_ffmpeg_folder = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
             this.button_save_settings = new System.Windows.Forms.Button();
             this.dgindex_loc_textbox = new System.Windows.Forms.TextBox();
             this.ffmpeg_loc_textbox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.aspectSelector43 = new System.Windows.Forms.RadioButton();
-            this.aspectSelector169 = new System.Windows.Forms.RadioButton();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -72,7 +72,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(960, 37);
             this.label1.TabIndex = 0;
-            this.label1.Text = "QTGMC + FFMPEG AutoScript GUI For Panasonic SDR-S7";
+            this.label1.Text = "Automated Conversion Tool from MOD files into MP4 (h264)";
             this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // panel1
@@ -98,7 +98,7 @@
             this.groupBox1.Size = new System.Drawing.Size(470, 141);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Panasonic SDR-7 Deinterlace (One file)";
+            this.groupBox1.Text = "Single-File Conversion";
             // 
             // button_sdr7_go
             // 
@@ -181,7 +181,7 @@
             this.groupBox2.Size = new System.Drawing.Size(476, 141);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Panasonic SDR-7 Deinterlace (Folder)";
+            this.groupBox2.Text = "Batch Conversion";
             // 
             // button_sdr7_batch_go
             // 
@@ -278,6 +278,28 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Settings";
             // 
+            // aspectSelector43
+            // 
+            this.aspectSelector43.AutoSize = true;
+            this.aspectSelector43.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.aspectSelector43.Location = new System.Drawing.Point(182, 94);
+            this.aspectSelector43.Name = "aspectSelector43";
+            this.aspectSelector43.Size = new System.Drawing.Size(53, 28);
+            this.aspectSelector43.TabIndex = 7;
+            this.aspectSelector43.Text = "4:3";
+            this.aspectSelector43.UseVisualStyleBackColor = true;
+            // 
+            // aspectSelector169
+            // 
+            this.aspectSelector169.AutoSize = true;
+            this.aspectSelector169.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.aspectSelector169.Location = new System.Drawing.Point(241, 94);
+            this.aspectSelector169.Name = "aspectSelector169";
+            this.aspectSelector169.Size = new System.Drawing.Size(63, 28);
+            this.aspectSelector169.TabIndex = 8;
+            this.aspectSelector169.Text = "16:9";
+            this.aspectSelector169.UseVisualStyleBackColor = true;
+            // 
             // button_set_dgindex_folder
             // 
             this.button_set_dgindex_folder.Location = new System.Drawing.Point(726, 57);
@@ -297,6 +319,16 @@
             this.button_set_ffmpeg_folder.Text = "Select";
             this.button_set_ffmpeg_folder.UseVisualStyleBackColor = true;
             this.button_set_ffmpeg_folder.Click += new System.EventHandler(this.button_set_ffmpeg_folder_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label6.Location = new System.Drawing.Point(6, 95);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(170, 24);
+            this.label6.TabIndex = 6;
+            this.label6.Text = "Video Aspect Ratio";
             // 
             // button_save_settings
             // 
@@ -332,38 +364,6 @@
             this.label3.TabIndex = 4;
             this.label3.Text = "DGIndex Location";
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label6.Location = new System.Drawing.Point(6, 95);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(170, 24);
-            this.label6.TabIndex = 6;
-            this.label6.Text = "Video Aspect Ratio";
-            // 
-            // aspectSelector43
-            // 
-            this.aspectSelector43.AutoSize = true;
-            this.aspectSelector43.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.aspectSelector43.Location = new System.Drawing.Point(182, 94);
-            this.aspectSelector43.Name = "aspectSelector43";
-            this.aspectSelector43.Size = new System.Drawing.Size(53, 28);
-            this.aspectSelector43.TabIndex = 7;
-            this.aspectSelector43.Text = "4:3";
-            this.aspectSelector43.UseVisualStyleBackColor = true;
-            // 
-            // aspectSelector169
-            // 
-            this.aspectSelector169.AutoSize = true;
-            this.aspectSelector169.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.aspectSelector169.Location = new System.Drawing.Point(241, 94);
-            this.aspectSelector169.Name = "aspectSelector169";
-            this.aspectSelector169.Size = new System.Drawing.Size(63, 28);
-            this.aspectSelector169.TabIndex = 8;
-            this.aspectSelector169.Text = "16:9";
-            this.aspectSelector169.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -377,7 +377,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = "QTGMC + FFMPEG AutoScript GUI for Panasonic SDR-S7";
+            this.Text = "DVD Quality Camera Converter";
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.panel1.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
