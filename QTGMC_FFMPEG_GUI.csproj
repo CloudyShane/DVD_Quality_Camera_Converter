@@ -78,7 +78,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="camera_icon.ico" />
-    <Content Include="suss.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
