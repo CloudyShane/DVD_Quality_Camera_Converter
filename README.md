@@ -5,6 +5,9 @@
 
 ## **WARNING: THIS TOOL ONLY SUPPORTS PAL INTERLACED VIDEOFILES, NTSC SUPPORT IS YET TO BE IMPLEMENTED AS OF VERSION 1.3 !!!**
 
+<img width="600" alt="изображение" src="https://github.com/user-attachments/assets/77d45775-b5de-4fb1-8949-5e99d164beb3" />
+
+
 ### Features:
 + Single file or batch conversion
 + Manual selection of resulting aspect ratio (4:3 or 16:9) **(added in 1.3)**
