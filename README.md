@@ -51,8 +51,9 @@
 1. Make sure you have all the prerequisites installed and/or available on your machine. **MAKE SURE THAT AVISYNTH+ WORKS!!!**
 2. Launch the program and correctly fill in the app settings (FFMPEG and DGIndex paths, video aspect ratio).
 3. Depending on your needs, fill in the parameters in either the single-file conversion or batch conversion.
-4. Press the corresponding button to begin the conversion.
-5. Enjoy your files.
+4. Single-File conversion is useful when you need to convert one file (duh...) or if you want to convert multiple large files simultaneously. If you want the latter, launch the process for the first file, then adjust settings for the second file and launch the process again, an do this as much as you need.
+5. Batch conversion is useful when you need to convert lots of files at once. This mode scans the source folder and launches the process for each file sequentially. Only one file is converted at a time. It is best to leave the PC alone while this happens, as the app will open new windows for each file, interrupting any user activity.
+6. Enjoy your files.
 
 ### Future features:
 - Generalization of the app (right now this app is labeled as "for Panasonic SDR-S7", while it can work with any(?) camcorder of that era)
