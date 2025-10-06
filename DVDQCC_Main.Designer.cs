@@ -107,7 +107,7 @@
             this.button_sdr7_go.Name = "button_sdr7_go";
             this.button_sdr7_go.Size = new System.Drawing.Size(458, 39);
             this.button_sdr7_go.TabIndex = 6;
-            this.button_sdr7_go.Text = "Begin Deinterlace";
+            this.button_sdr7_go.Text = "Begin Single-File Conversion";
             this.button_sdr7_go.UseVisualStyleBackColor = true;
             this.button_sdr7_go.Click += new System.EventHandler(this.button_launch_singlefile_conversion);
             // 
@@ -190,7 +190,7 @@
             this.button_sdr7_batch_go.Name = "button_sdr7_batch_go";
             this.button_sdr7_batch_go.Size = new System.Drawing.Size(464, 39);
             this.button_sdr7_batch_go.TabIndex = 6;
-            this.button_sdr7_batch_go.Text = "Begin Batch Deinterlace";
+            this.button_sdr7_batch_go.Text = "Begin Batch Conversion";
             this.button_sdr7_batch_go.UseVisualStyleBackColor = true;
             this.button_sdr7_batch_go.Click += new System.EventHandler(this.button_launch_batch_conversion);
             // 

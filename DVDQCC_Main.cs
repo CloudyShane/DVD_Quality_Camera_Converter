@@ -260,6 +260,7 @@ namespace DVDQCC
             string work_folder_temp = Directory.GetCurrentDirectory() + "\\temp\\";
             string currentfilenameDATE = (DateTime.Now.ToString("yyyy.MM.dd.HHmmss"));
             string avs_filename = (work_folder_temp + currentfilenameDATE + ".avs");
+            string ffmpeg_filename = (work_folder_temp + currentfilenameDATE + ".bat");
             string d2v_filename = (work_folder_temp + currentfilenameDATE);
             string d2v_filename_we = (work_folder_temp + currentfilenameDATE + ".d2v");
             string resulting_file = (output_folder_name + "\\" + currentfilenameDATE + "." + input_MOD_for_later + ".mp4");
@@ -273,7 +274,7 @@ namespace DVDQCC
             if (File.Exists(input_MOD_name) && Directory.Exists(output_folder_name))
             {
                 // Start a new thread for the workflow
-                Thread workerThread = new Thread(() => RunSinglefileWorkflow(ffmpeg_exe_location, dgindex_location, output_folder_name, input_MOD_name, input_MOD_for_later, work_folder_temp, currentfilenameDATE, avs_filename, d2v_filename, d2v_filename_we, resulting_file));
+                Thread workerThread = new Thread(() => RunSinglefileWorkflow(ffmpeg_exe_location, dgindex_location, output_folder_name, input_MOD_name, input_MOD_for_later, work_folder_temp, currentfilenameDATE, avs_filename, ffmpeg_filename, d2v_filename, d2v_filename_we, resulting_file));
                 workerThread.Start();
                 Thread.Sleep(1000);
             }
@@ -296,7 +297,7 @@ namespace DVDQCC
             return " error ";
         }
 
-        private void RunSinglefileWorkflow(string ffmpegExeLocation, string dgIndexLocation, string outputFolderName, string input_MOD_name, string input_MOD_for_later, string work_folder_temp, string currentfilenameDATE, string avs_filename, string d2v_filename, string d2v_filename_we, string resulting_file)
+        private void RunSinglefileWorkflow(string ffmpegExeLocation, string dgIndexLocation, string outputFolderName, string input_MOD_name, string input_MOD_for_later, string work_folder_temp, string currentfilenameDATE, string avs_filename, string ffmpeg_filename, string d2v_filename, string d2v_filename_we, string resulting_file)
         {
             // DGIndex Command Execution
             try
@@ -337,6 +338,15 @@ namespace DVDQCC
             {
                 string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + choose_aspect_ratio() + "\u0022" + resulting_file + "\u0022";
                 //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
+                
+                //create ffmpeg bat file for troubleshooting if something goes wrong
+                if (!File.Exists(ffmpeg_filename)) 
+                {
+                    using (StreamWriter sw2 = File.CreateText(ffmpeg_filename))
+                    {
+                        sw2.WriteLine(ffmpegExeLocation + " " + ffmpeg_arguments);
+                    }
+                }
 
                 ProcessStartInfo processSecondStartInfo = new ProcessStartInfo(ffmpegExeLocation, ffmpeg_arguments)
                 {
@@ -357,11 +367,14 @@ namespace DVDQCC
                 MessageBox.Show($"An error occurred while starting FFMPEG: {ex2.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+            //MessageBox.Show("Conversion was successful!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void button_launch_batch_conversion(object sender, EventArgs e)
         {
             var MyIni = new IniFile("settings.ini");
+            bool errored_out = false;
+            var ready_files_amount = 0;
             string ffmpeg_exe_location = ffmpeg_loc_textbox.Text.Trim();
             string dgindex_location = dgindex_loc_textbox.Text.Trim();
             string output_folder_name = sdr7_batch_output_folder.Text.Trim();
@@ -389,36 +402,43 @@ namespace DVDQCC
                     {
                         string currentfilenameDATE = (DateTime.Now.ToString("yyyy.MM.dd.HHmmss"));
                         string avs_filename = (work_folder_temp + currentfilenameDATE + ".avs");
+                        string ffmpeg_filename = (work_folder_temp + currentfilenameDATE + ".bat");
                         string d2v_filename = (work_folder_temp + currentfilenameDATE);
                         string d2v_filename_we = (work_folder_temp + currentfilenameDATE + ".d2v");
                         string input_MOD_for_later = Path.GetFileNameWithoutExtension(filePath);
                         string input_MOD_name = Path.GetFileName(filePath);
                         string resulting_file = (output_folder_name + "\\" + currentfilenameDATE + "." + input_MOD_for_later + ".mp4");
-                        RunBatchWorkflow(ffmpeg_exe_location, dgindex_location, output_folder_name, input_folder_name, input_MOD_name, input_MOD_for_later, work_folder_temp, currentfilenameDATE, avs_filename, d2v_filename, d2v_filename_we, resulting_file);
+                        RunBatchWorkflow(ffmpeg_exe_location, dgindex_location, output_folder_name, input_folder_name, input_MOD_name, input_MOD_for_later, work_folder_temp, currentfilenameDATE, avs_filename, ffmpeg_filename, d2v_filename, d2v_filename_we, resulting_file);
+                        if (File.Exists(resulting_file)) ready_files_amount = ready_files_amount + 1;
                     }
 
-                    MessageBox.Show("Batch conversion was successful. Converted " + modFiles.Length + " file(s).", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    if ((errored_out == false) && (ready_files_amount == modFiles.Length)) MessageBox.Show("Batch conversion was successful. Converted " + modFiles.Length + " file(s).", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    else MessageBox.Show("Batch conversion was unsuccessful. Converted " + ready_files_amount + " file(s).", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 catch (UnauthorizedAccessException ex)
                 {
+                    errored_out = true;
                     MessageBox.Show("Access to the path is denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 catch (DirectoryNotFoundException ex)
                 {
+                    errored_out = true;
                     MessageBox.Show("The specified path was not found: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
                 catch (Exception ex)
                 {
+                    errored_out = true;
                     MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             else
             {
+                errored_out = true;
                 MessageBox.Show("The directory does not exist or is invalid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }       
         }
 
-        private void RunBatchWorkflow(string ffmpegExeLocation, string dgIndexLocation, string outputFolderName, string input_folder_name, string input_MOD_name, string input_MOD_for_later, string work_folder_temp, string currentfilenameDATE, string avs_filename, string d2v_filename, string d2v_filename_we, string resulting_file)
+        private void RunBatchWorkflow(string ffmpegExeLocation, string dgIndexLocation, string outputFolderName, string input_folder_name, string input_MOD_name, string input_MOD_for_later, string work_folder_temp, string currentfilenameDATE, string avs_filename, string ffmpeg_filename, string d2v_filename, string d2v_filename_we, string resulting_file)
         {
             // DGIndex Command Execution
             try
@@ -459,6 +479,15 @@ namespace DVDQCC
             {
                 string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + choose_aspect_ratio() + "\u0022" + resulting_file + "\u0022";
                 //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
+
+                //create ffmpeg bat file for troubleshooting if something goes wrong
+                if (!File.Exists(ffmpeg_filename))
+                {
+                    using (StreamWriter sw2 = File.CreateText(ffmpeg_filename))
+                    {
+                        sw2.WriteLine(ffmpegExeLocation + " " + ffmpeg_arguments);
+                    }
+                }
 
                 ProcessStartInfo processSecondStartInfo = new ProcessStartInfo(ffmpegExeLocation, ffmpeg_arguments)
                 {
