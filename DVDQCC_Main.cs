@@ -18,7 +18,7 @@ namespace DVDQCC
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-            // Get the host (directory of origin) for this file
+            // Get the host (directory of origin) for settings.ini
             string tempfolderpath = Directory.GetCurrentDirectory() + "\\temp\\";
             string configfilepath = Directory.GetCurrentDirectory() + "\\settings.ini";
             var MyIni = new IniFile("settings.ini");
@@ -27,11 +27,12 @@ namespace DVDQCC
             {
                 Directory.CreateDirectory(tempfolderpath);
             }
-            if (!File.Exists(configfilepath))
+            if (!File.Exists(configfilepath)) //initial Settings.ini creation and form adjustment
             {
                 MyIni.Write("FFMPEG Location",  "C:\\TEMP\\ffmpeg.exe");
                 MyIni.Write("DGIndex Location", "C:\\TEMP\\dgindex.exe");
                 MyIni.Write("Aspect Ratio", "16:9");
+                MyIni.Write("Camera Region", "PAL");
                 MyIni.Write("Last Single-File Source", "C:\\TEMP\\sdr7.mod");
                 MyIni.Write("Last Single-File Output", "C:\\TEMP\\");
                 MyIni.Write("Last Batch Source", "C:\\TEMP\\");
@@ -40,14 +41,18 @@ namespace DVDQCC
                 dgindex_loc_textbox.Text = "C:\\TEMP\\dgindex.exe";
                 aspectSelector169.Checked = true;
                 aspectSelector43.Checked = false;
+                regionselectorNTSC.Checked = false;
+                regionselectorPAL.Checked = true;
             }
-            else
+            else //read from settings.ini if it exists and adjust form
             {
                 var ffmpeg_location = MyIni.Read("FFMPEG Location");
                 var dgindex_location = MyIni.Read("DGIndex Location");
                 var last_aspect_ratio = MyIni.Read("Aspect Ratio");
+                var last_region = MyIni.Read("Camera Region");
                 ffmpeg_loc_textbox.Text = ffmpeg_location;
                 dgindex_loc_textbox.Text = dgindex_location;
+                //Determine Aspect Ratio
                 if (last_aspect_ratio=="16:9")
                 {
                     aspectSelector169.Checked = true;
@@ -64,7 +69,23 @@ namespace DVDQCC
                     aspectSelector169.Checked = true;
                     aspectSelector43.Checked = false;
                 }
-
+                //Determine Camera Region
+                if (last_region == "PAL")
+                {
+                    regionselectorPAL.Checked = true;
+                    regionselectorNTSC.Checked = false;
+                }
+                else if (last_region == "NTSC")
+                {
+                    regionselectorPAL.Checked = false;
+                    regionselectorNTSC.Checked = true;
+                }
+                else
+                {
+                    MyIni.Write("Camera Region", "PAL");
+                    regionselectorPAL.Checked = true;
+                    regionselectorNTSC.Checked = false;
+                }
             }
         }
 
@@ -117,6 +138,7 @@ namespace DVDQCC
             var MyIni = new IniFile("settings.ini");
             MyIni.Write("FFMPEG Location", ffmpeg_loc_textbox.Text.Trim());
             MyIni.Write("DGIndex Location", dgindex_loc_textbox.Text.Trim());
+            //save aspect ratio:
             if (aspectSelector169.Checked == true)
             {
                 MyIni.Write("Aspect Ratio", "16:9");
@@ -131,7 +153,22 @@ namespace DVDQCC
                 aspectSelector169.Checked = true;
                 aspectSelector43.Checked = false;
             }
-            
+            //save camera region:
+            if (regionselectorNTSC.Checked == true)
+            {
+                MyIni.Write("Camera Region", "NTSC");
+            }
+            else if (regionselectorPAL.Checked == true)
+            {
+                MyIni.Write("Camera Region", "PAL");
+            }
+            else
+            {
+                MyIni.Write("Camera Region", "PAL");
+                regionselectorNTSC.Checked = false;
+                regionselectorPAL.Checked = true;
+            }
+
         }
 
         private void autosave_aspect_ratio ()
@@ -284,15 +321,28 @@ namespace DVDQCC
             }
         }
 
-        private string choose_aspect_ratio()
+        private string choose_aspect_ratio_and_region() //actually sets aspect ratio and camera region
         {
-            if (aspectSelector169.Checked == true && aspectSelector43.Checked == false)
+            if ((regionselectorPAL.Checked == true) && (regionselectorNTSC.Checked == false))  //If user wants PAL
             {
-                return " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
-            }
-            else if (aspectSelector169.Checked == false && aspectSelector43.Checked == true)
+                if (aspectSelector169.Checked == true && aspectSelector43.Checked == false) // if user wants PAL 16:9
+                {
+                    return " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                }
+                else if (aspectSelector169.Checked == false && aspectSelector43.Checked == true) // if user wants PAL 4:3
+                {
+                    return " -map 1:a -map 0:v -vf scale=768:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                }
+            } else if ((regionselectorNTSC.Checked == true) && (regionselectorPAL.Checked == false)) // If user wants NTSC
             {
-                return " -map 1:a -map 0:v -vf scale=768:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                if (aspectSelector169.Checked == true && aspectSelector43.Checked == false) // if user wants NTSC 16:9
+                {
+                    return " -map 1:a -map 0:v -vf scale=854:480 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                }
+                else if (aspectSelector169.Checked == false && aspectSelector43.Checked == true) // if user wants NTSC 4:3
+                {
+                    return " -map 1:a -map 0:v -vf scale=640:480 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                }
             }
             return " error ";
         }
@@ -336,7 +386,7 @@ namespace DVDQCC
             // FFMPEG Command Execution
             try
             {
-                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + choose_aspect_ratio() + "\u0022" + resulting_file + "\u0022";
+                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
                 //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
                 
                 //create ffmpeg bat file for troubleshooting if something goes wrong
@@ -477,7 +527,7 @@ namespace DVDQCC
             // FFMPEG Command Execution
             try
             {
-                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + choose_aspect_ratio() + "\u0022" + resulting_file + "\u0022";
+                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
                 //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
 
                 //create ffmpeg bat file for troubleshooting if something goes wrong
