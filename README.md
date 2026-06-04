@@ -56,4 +56,4 @@
 + Panasonic SDR-S50 [NTSC]
 
 ### Credits:
-+ [HondasAreFastnt](https://www.reddit.com/user/HondasAreFastnt/) for SDR-S50 NTSC test footage, which helped to test NTSC support
++ [WhoLock](https://www.youtube.com/@wholock0001) for SDR-S50 NTSC test footage, which helped to test NTSC support
