@@ -51,9 +51,9 @@
 5. Batch conversion is useful when you need to convert lots of files at once. This mode scans the source folder and launches the process for each file sequentially. Only one file is converted at a time. It is best to leave the PC alone while this happens, as the app will open new windows for each file, interrupting any user activity.
 6. Enjoy your files.
 
+### Tested camcorders:
++ Panasonic SDR-S7 [PAL]
++ Panasonic SDR-S50 [NTSC]
+
 ### Credits:
 + [HondasAreFastnt](https://www.reddit.com/user/HondasAreFastnt/) for SDR-S50 NTSC test footage, which helped to test NTSC support
-
-### Planned features:
-- Non-Interlaced .MOD files support? (do the even exist though?)
-- e.t.c...
