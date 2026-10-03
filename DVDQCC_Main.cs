@@ -29,14 +29,16 @@ namespace DVDQCC
             }
             if (!File.Exists(configfilepath)) //initial Settings.ini creation and form adjustment
             {
-                MyIni.Write("FFMPEG Location",  "C:\\TEMP\\ffmpeg.exe");
+                MyIni.Write("FFMPEG Location", "C:\\TEMP\\ffmpeg.exe");
                 MyIni.Write("DGIndex Location", "C:\\TEMP\\dgindex.exe");
                 MyIni.Write("Aspect Ratio", "16:9");
                 MyIni.Write("Camera Region", "PAL");
+                MyIni.Write("CRF", "18");
+                globalSettings.h264_crf_string = "-crf " + globalSettings.h264_crf.ToString();
                 MyIni.Write("Last Single-File Source", "C:\\TEMP\\sdr7.mod");
                 MyIni.Write("Last Single-File Output", "C:\\TEMP\\");
                 MyIni.Write("Last Batch Source", "C:\\TEMP\\");
-                MyIni.Write("Last Batch Output", "C:\\TEMP\\");  
+                MyIni.Write("Last Batch Output", "C:\\TEMP\\");
                 ffmpeg_loc_textbox.Text = "C:\\TEMP\\ffmpeg.exe";
                 dgindex_loc_textbox.Text = "C:\\TEMP\\dgindex.exe";
                 aspectSelector169.Checked = true;
@@ -52,8 +54,19 @@ namespace DVDQCC
                 var last_region = MyIni.Read("Camera Region");
                 ffmpeg_loc_textbox.Text = ffmpeg_location;
                 dgindex_loc_textbox.Text = dgindex_location;
+                //Checking if CRF is an integer
+                if (int.TryParse(MyIni.Read("CRF"), out globalSettings.h264_crf))
+                {
+                    globalSettings.h264_crf = int.Parse(MyIni.Read("CRF"));
+                }
+                else
+                {
+                    globalSettings.h264_crf = 18;
+                    MyIni.Write("CRF", "18");
+                }
+                globalSettings.h264_crf_string = "-crf " + globalSettings.h264_crf.ToString();
                 //Determine Aspect Ratio
-                if (last_aspect_ratio=="16:9")
+                if (last_aspect_ratio == "16:9")
                 {
                     aspectSelector169.Checked = true;
                     aspectSelector43.Checked = false;
@@ -87,6 +100,12 @@ namespace DVDQCC
                     regionselectorNTSC.Checked = false;
                 }
             }
+        }
+
+        public static class globalSettings
+        {
+            public static int h264_crf = 18;
+            public static string h264_crf_string = "-crf " + h264_crf.ToString();
         }
 
         private void button_set_ffmpeg_directory(object sender, EventArgs e)
@@ -171,7 +190,7 @@ namespace DVDQCC
 
         }
 
-        private void autosave_aspect_ratio ()
+        private void autosave_aspect_ratio()
         {
             var MyIni = new IniFile("settings.ini");
             if ((aspectSelector169.Checked == true && MyIni.Read("Aspect Ratio") == "16:9") || (aspectSelector43.Checked == true && MyIni.Read("Aspect Ratio") == "4:3"))
@@ -321,30 +340,58 @@ namespace DVDQCC
             }
         }
 
-        private string choose_aspect_ratio_and_region() //actually sets aspect ratio and camera region
+        private string choose_aspect_ratio_and_region_old() //actually sets aspect ratio and camera region
         {
             if ((regionselectorPAL.Checked == true) && (regionselectorNTSC.Checked == false))  //If user wants PAL
             {
                 if (aspectSelector169.Checked == true && aspectSelector43.Checked == false) // if user wants PAL 16:9
                 {
-                    return " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                    return " -map 1:a -map 0:v -c:v libx264 -preset slow " + globalSettings.h264_crf_string + " -strict -2 -c:a aac -b:a 512k ";
                 }
                 else if (aspectSelector169.Checked == false && aspectSelector43.Checked == true) // if user wants PAL 4:3
                 {
-                    return " -map 1:a -map 0:v -vf scale=768:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                    return " -map 1:a -map 0:v -c:v libx264 -preset slow " + globalSettings.h264_crf_string + " -strict -2 -c:a aac -b:a 512k ";
                 }
             } else if ((regionselectorNTSC.Checked == true) && (regionselectorPAL.Checked == false)) // If user wants NTSC
             {
                 if (aspectSelector169.Checked == true && aspectSelector43.Checked == false) // if user wants NTSC 16:9
                 {
-                    return " -map 1:a -map 0:v -vf scale=854:480 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                    return " -map 1:a -map 0:v -c:v libx264 -preset slow " + globalSettings.h264_crf_string + " -strict -2 -c:a aac -b:a 512k ";
                 }
                 else if (aspectSelector169.Checked == false && aspectSelector43.Checked == true) // if user wants NTSC 4:3
                 {
-                    return " -map 1:a -map 0:v -vf scale=640:480 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k ";
+                    return " -map 1:a -map 0:v -c:v libx264 -preset slow " + globalSettings.h264_crf_string + " -strict -2 -c:a aac -b:a 512k ";
                 }
             }
             return " error ";
+        }
+
+        private string choose_aspect_ratio_and_region() //Deprecated - only builds the string. Aspect ratio and region are select in "GenerateAVSscript now."
+        {
+            return " -map 1:a -map 0:v -c:v libx264 -pix_fmt yuv420p -preset slow " + globalSettings.h264_crf_string + " -strict -2 -c:a aac -b:a 512k ";
+        }
+
+        private void GenerateAVSscript(string avsname, string d2vname)
+        {
+            //Generate AVS Script
+            if (!File.Exists(avsname))
+            {
+                using (StreamWriter swgener = File.CreateText(avsname))
+                {
+                    swgener.WriteLine("D2VSource(" + "\u0022" + d2vname + "\u0022" + ")");
+                    swgener.WriteLine("AssumeTFF()");
+                    swgener.WriteLine("QTGMC( Preset=\"Slow\" )");
+
+                    if (regionselectorPAL.Checked && aspectSelector169.Checked)
+                        swgener.WriteLine("Spline36Resize(1024, 576)");
+                    else if (regionselectorPAL.Checked && aspectSelector43.Checked)
+                        swgener.WriteLine("Spline36Resize(768, 576)");
+                    else if (regionselectorNTSC.Checked && aspectSelector169.Checked)
+                        swgener.WriteLine("Spline36Resize(854, 480)");
+                    else if (regionselectorNTSC.Checked && aspectSelector43.Checked)
+                        swgener.WriteLine("Spline36Resize(640, 480)");
+                }
+            }
         }
 
         private void RunSinglefileWorkflow(string ffmpegExeLocation, string dgIndexLocation, string outputFolderName, string input_MOD_name, string input_MOD_for_later, string work_folder_temp, string currentfilenameDATE, string avs_filename, string ffmpeg_filename, string d2v_filename, string d2v_filename_we, string resulting_file)
@@ -373,15 +420,7 @@ namespace DVDQCC
                 return;
             }
             //Generate AVS Script
-            if (!File.Exists(avs_filename))
-            {
-                using (StreamWriter sw = File.CreateText(avs_filename))
-                {
-                    sw.WriteLine("D2VSource(" + "\u0022" + d2v_filename_we + "\u0022" + ")");
-                    sw.WriteLine("AssumeTFF()");
-                    sw.WriteLine("QTGMC( Preset=\"Slow\" )");
-                }
-            }
+            GenerateAVSscript(avs_filename, d2v_filename_we);
 
             // FFMPEG Command Execution
             try
@@ -514,15 +553,7 @@ namespace DVDQCC
                 return;
             }
             //Generate AVS Script
-            if (!File.Exists(avs_filename))
-            {
-                using (StreamWriter sw = File.CreateText(avs_filename))
-                {
-                    sw.WriteLine("D2VSource(" + "\u0022" + d2v_filename_we + "\u0022" + ")");
-                    sw.WriteLine("AssumeTFF()");
-                    sw.WriteLine("QTGMC( Preset=\"Slow\" )");
-                }
-            }
+            GenerateAVSscript(avs_filename, d2v_filename_we);
 
             // FFMPEG Command Execution
             try
@@ -530,7 +561,7 @@ namespace DVDQCC
                 string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
                 //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
 
-                //create ffmpeg bat file for troubleshooting if something goes wrong
+                //create ffmpeg bat file for troubleshooting (not used by the program)
                 if (!File.Exists(ffmpeg_filename))
                 {
                     using (StreamWriter sw2 = File.CreateText(ffmpeg_filename))
