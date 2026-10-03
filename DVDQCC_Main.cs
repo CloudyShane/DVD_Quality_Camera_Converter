@@ -1,11 +1,12 @@
 ﻿using System;
-using System.IO;
-using System.Text;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
-using System.Reflection;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace DVDQCC
 {
@@ -366,9 +367,18 @@ namespace DVDQCC
             return " error ";
         }
 
-        private string choose_aspect_ratio_and_region() //Deprecated - only builds the string. Aspect ratio and region are select in "GenerateAVSscript now."
+        private string choose_aspect_ratio_and_region() //Only builds the string. Aspect ratio and region are being selected in "GenerateAVSscript" now.
         {
             return " -map 1:a -map 0:v -c:v libx264 -pix_fmt yuv420p -preset slow " + globalSettings.h264_crf_string + " -strict -2 -c:a aac -b:a 512k ";
+        }
+
+        private string look_for_generated_audiofile(string filename)
+        {
+            string workDir = Directory.GetCurrentDirectory() + "\\temp\\";
+            string[] audioExtensions = { ".mp2", ".ac3" };
+            string foundAudio = Array.Find(Directory.GetFiles(workDir, $"{filename}*.*"),
+                file => audioExtensions.Contains(Path.GetExtension(file).ToLower()));
+            return foundAudio;
         }
 
         private void GenerateAVSscript(string avsname, string d2vname)
@@ -419,15 +429,24 @@ namespace DVDQCC
                 MessageBox.Show($"An error occurred while starting DGIndex: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            //After DGIndex did its work, look for the audiofile it generated:
+            string audiotrack = look_for_generated_audiofile(currentfilenameDATE);
+            
             //Generate AVS Script
             GenerateAVSscript(avs_filename, d2v_filename_we);
 
             // FFMPEG Command Execution
             try
             {
-                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + audiotrack + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+
+                // 1.5:
+                // string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+
+                // old:
                 //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
-                
+
                 //create ffmpeg bat file for troubleshooting if something goes wrong
                 if (!File.Exists(ffmpeg_filename)) 
                 {
@@ -552,13 +571,22 @@ namespace DVDQCC
                 MessageBox.Show($"An error occurred while starting DGIndex: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            //After DGIndex did its work, look for the audiofile it generated:
+            string audiotrack = look_for_generated_audiofile(currentfilenameDATE);
+
             //Generate AVS Script
             GenerateAVSscript(avs_filename, d2v_filename_we);
 
             // FFMPEG Command Execution
             try
             {
-                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + audiotrack + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+
+                // 1.5:
+                // string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+                
+                // old:
                 //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
 
                 //create ffmpeg bat file for troubleshooting (not used by the program)
