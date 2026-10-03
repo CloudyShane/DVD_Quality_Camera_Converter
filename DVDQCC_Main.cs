@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -107,6 +108,12 @@ namespace DVDQCC
         {
             public static int h264_crf = 18;
             public static string h264_crf_string = "-crf " + h264_crf.ToString();
+            public static int currentBatchFileNumber = 0;
+            public static int totalBatchFilesCount = 0;
+            public static double TotalBatchDurationSeconds = 0;
+            public static double AlreadyEncodedDurationSeconds = 0;
+            public static double CurrentFileDurationSeconds = 0;
+            public static ITaskbarList3 taskbarInstance = (ITaskbarList3)new TaskbarInstance();
         }
 
         private void button_set_ffmpeg_directory(object sender, EventArgs e)
@@ -404,6 +411,37 @@ namespace DVDQCC
             }
         }
 
+        private string ExtractAudioDelay(string audiopath)
+        {
+            string audioname = Path.GetFileNameWithoutExtension(audiopath);
+            Match match = Regex.Match(audioname, @"DELAY\s*(-?\d+)\s*ms", RegexOptions.IgnoreCase);
+            int delay = 0;
+
+            if (match.Success)
+            {
+                if (!int.TryParse(match.Groups[1].Value, out delay))
+                {
+                    delay = 0;
+                }
+            }
+
+            string ffmpegAudioArgs = "";
+
+            if (delay > 0)
+            {
+                ffmpegAudioArgs = $"-af \"adelay={delay}|{delay}\"";
+                ffmpegAudioArgs = " " + ffmpegAudioArgs + " ";
+            }
+            else if (delay < 0)
+            {
+                double offsetSeconds = Math.Abs(delay) / 1000.0;
+                ffmpegAudioArgs = $"-itsoffset {offsetSeconds.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture)}";
+                ffmpegAudioArgs = " " + ffmpegAudioArgs + " ";
+            }
+
+            return ffmpegAudioArgs;
+        }
+
         private void RunSinglefileWorkflow(string ffmpegExeLocation, string dgIndexLocation, string outputFolderName, string input_MOD_name, string input_MOD_for_later, string work_folder_temp, string currentfilenameDATE, string avs_filename, string ffmpeg_filename, string d2v_filename, string d2v_filename_we, string resulting_file)
         {
             // DGIndex Command Execution
@@ -439,7 +477,7 @@ namespace DVDQCC
             // FFMPEG Command Execution
             try
             {
-                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + audiotrack + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + audiotrack + "\u0022" + choose_aspect_ratio_and_region() + ExtractAudioDelay(audiotrack) + "\u0022" + resulting_file + "\u0022";
 
                 // 1.5:
                 // string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
@@ -480,6 +518,7 @@ namespace DVDQCC
 
         private void button_launch_batch_conversion(object sender, EventArgs e)
         {
+            if (globalSettings.currentBatchFileNumber > 0) return;
             var MyIni = new IniFile("settings.ini");
             bool errored_out = false;
             var ready_files_amount = 0;
@@ -506,6 +545,16 @@ namespace DVDQCC
                         return;
                     }
 
+                    globalSettings.totalBatchFilesCount = modFiles.Length;
+                    globalSettings.currentBatchFileNumber = 0;
+                    globalSettings.TotalBatchDurationSeconds = 0;
+                    globalSettings.AlreadyEncodedDurationSeconds = 0;
+
+                    foreach (var filePath in modFiles)
+                    {
+                        globalSettings.TotalBatchDurationSeconds += GetVideoDurationSeconds(ffmpeg_exe_location, filePath);
+                    }
+
                     foreach (var filePath in modFiles)
                     {
                         string currentfilenameDATE = (DateTime.Now.ToString("yyyy.MM.dd.HHmmss"));
@@ -516,33 +565,67 @@ namespace DVDQCC
                         string input_MOD_for_later = Path.GetFileNameWithoutExtension(filePath);
                         string input_MOD_name = Path.GetFileName(filePath);
                         string resulting_file = (output_folder_name + "\\" + currentfilenameDATE + "." + input_MOD_for_later + ".mp4");
+                        string fullInputModPath = input_folder_name + "\\" + input_MOD_name;
+                        globalSettings.CurrentFileDurationSeconds = GetVideoDurationSeconds(ffmpeg_exe_location, fullInputModPath);
+                        globalSettings.currentBatchFileNumber++;
                         RunBatchWorkflow(ffmpeg_exe_location, dgindex_location, output_folder_name, input_folder_name, input_MOD_name, input_MOD_for_later, work_folder_temp, currentfilenameDATE, avs_filename, ffmpeg_filename, d2v_filename, d2v_filename_we, resulting_file);
+                        globalSettings.AlreadyEncodedDurationSeconds += globalSettings.CurrentFileDurationSeconds;
                         if (File.Exists(resulting_file)) ready_files_amount = ready_files_amount + 1;
                     }
 
-                    if ((errored_out == false) && (ready_files_amount == modFiles.Length)) MessageBox.Show("Batch conversion was successful. Converted " + modFiles.Length + " file(s).", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    else MessageBox.Show("Batch conversion was unsuccessful. Converted " + ready_files_amount + " file(s).", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    if ((errored_out == false) && (ready_files_amount == modFiles.Length))
+                    {
+                        MessageBox.Show("Batch conversion was successful. Converted " + modFiles.Length + " file(s).", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        button_sdr7_batch_go.Text = "Begin Batch Conversion";
+                        button_sdr7_batch_go.Refresh();
+                        globalSettings.currentBatchFileNumber = 0;
+                        globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Batch conversion was unsuccessful. Converted " + ready_files_amount + " file(s).", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        button_sdr7_batch_go.Text = "Begin Batch Conversion";
+                        button_sdr7_batch_go.Refresh();
+                        globalSettings.currentBatchFileNumber = 0;
+                        globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                    }
                 }
                 catch (UnauthorizedAccessException ex)
                 {
                     errored_out = true;
                     MessageBox.Show("Access to the path is denied", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    button_sdr7_batch_go.Text = "Begin Batch Conversion";
+                    button_sdr7_batch_go.Refresh();
+                    globalSettings.currentBatchFileNumber = 0;
+                    globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
                 }
                 catch (DirectoryNotFoundException ex)
                 {
                     errored_out = true;
                     MessageBox.Show("The specified path was not found: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    button_sdr7_batch_go.Text = "Begin Batch Conversion";
+                    button_sdr7_batch_go.Refresh();
+                    globalSettings.currentBatchFileNumber = 0;
+                    globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
                 }
                 catch (Exception ex)
                 {
                     errored_out = true;
                     MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    button_sdr7_batch_go.Text = "Begin Batch Conversion";
+                    button_sdr7_batch_go.Refresh();
+                    globalSettings.currentBatchFileNumber = 0;
+                    globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
                 }
             }
             else
             {
                 errored_out = true;
                 MessageBox.Show("The directory does not exist or is invalid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                button_sdr7_batch_go.Text = "Begin Batch Conversion";
+                button_sdr7_batch_go.Refresh();
+                globalSettings.currentBatchFileNumber = 0;
+                globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
             }       
         }
 
@@ -551,12 +634,13 @@ namespace DVDQCC
             // DGIndex Command Execution
             try
             {
-                string dgindex_arguments = "-i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + " -o " + "\u0022" + d2v_filename + "\u0022" + " -exit"; // Arguments for the first program
+                string dgindex_arguments = "-i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + " -o " + "\u0022" + d2v_filename + "\u0022" + " -hide -exit"; // Arguments for the first program
                 ProcessStartInfo processStartInfo = new ProcessStartInfo(dgIndexLocation, dgindex_arguments)
                 {
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    WindowStyle = ProcessWindowStyle.Minimized,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 };
 
                 using (Process processFirst = new Process())
@@ -578,38 +662,91 @@ namespace DVDQCC
             //Generate AVS Script
             GenerateAVSscript(avs_filename, d2v_filename_we);
 
+            //Get file duration
+            string fullInputModPath = input_folder_name + "\\" + input_MOD_name;
+            double totalDurationSeconds = GetVideoDurationSeconds(ffmpegExeLocation, fullInputModPath);
+
+
             // FFMPEG Command Execution
             try
             {
-                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + audiotrack + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
+                string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + audiotrack + "\u0022" + choose_aspect_ratio_and_region() + ExtractAudioDelay(audiotrack) + "\u0022" + resulting_file + "\u0022";
 
-                // 1.5:
-                // string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + choose_aspect_ratio_and_region() + "\u0022" + resulting_file + "\u0022";
-                
-                // old:
-                //string ffmpeg_arguments = "-i " + "\u0022" + avs_filename + "\u0022" + " -i " + "\u0022" + input_folder_name + "\\" + input_MOD_name + "\u0022" + " -map 1:a -map 0:v -vf scale=1024:576 -c:v libx264 -preset slow -crf 20 -strict -2 -c:a aac -b:a 512k " + "\u0022" + resulting_file + "\u0022";
-
-                //create ffmpeg bat file for troubleshooting (not used by the program)
                 if (!File.Exists(ffmpeg_filename))
                 {
                     using (StreamWriter sw2 = File.CreateText(ffmpeg_filename))
                     {
-                        sw2.WriteLine(ffmpegExeLocation + " " + ffmpeg_arguments);
+                        sw2.WriteLine("\u0022" + ffmpegExeLocation + "\u0022" + " " + ffmpeg_arguments);
                     }
                 }
 
                 ProcessStartInfo processSecondStartInfo = new ProcessStartInfo(ffmpegExeLocation, ffmpeg_arguments)
                 {
                     UseShellExecute = false,
+                    RedirectStandardError = true,
                     RedirectStandardOutput = false,
-                    WindowStyle = ProcessWindowStyle.Minimized,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 };
 
                 using (Process processSecond = new Process())
                 {
                     processSecond.StartInfo = processSecondStartInfo;
+
+                    processSecond.ErrorDataReceived += (s, args) =>
+                    {
+                        if (!string.IsNullOrEmpty(args.Data) && args.Data.Contains("time="))
+                        {
+                            string timeString = GetSubstringBetween(args.Data, "time=", " ");
+
+                            TimeSpan currentTime;
+                            int percent = 0;
+                            int globalPercent = 0;
+
+                            if (TimeSpan.TryParse(timeString, out currentTime))
+                            {
+                                if (totalDurationSeconds > 0)
+                                {
+                                    percent = (int)((currentTime.TotalSeconds / totalDurationSeconds) * 100);
+                                    if (percent > 100) percent = 100;
+                                    if (percent < 0) percent = 0;
+                                }
+
+                                if (globalSettings.TotalBatchDurationSeconds > 0)
+                                {
+                                    double totalEncodedSeconds = globalSettings.AlreadyEncodedDurationSeconds + currentTime.TotalSeconds;
+
+                                    globalPercent = (int)((totalEncodedSeconds / globalSettings.TotalBatchDurationSeconds) * 100);
+                                    if (globalPercent > 100) globalPercent = 100;
+                                    if (globalPercent < 0) globalPercent = 0;
+                                }
+                            }
+
+                            this.BeginInvoke((MethodInvoker)delegate
+                            {
+                                button_sdr7_batch_go.Text = string.Format("Converting file {0} of {1} ({2}%)",
+                                    globalSettings.currentBatchFileNumber,
+                                    globalSettings.totalBatchFilesCount,
+                                    percent);
+                                button_sdr7_batch_go.Refresh();
+
+                                int visualPercent = globalPercent + 1;
+                                if (visualPercent > 100) visualPercent = 100;
+
+                                globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.Normal);
+                                globalSettings.taskbarInstance.SetProgressValue(this.Handle, (ulong)visualPercent, 100);
+                            });
+                        }
+                    };
+
                     processSecond.Start();
-                    processSecond.WaitForExit();
+                    processSecond.BeginErrorReadLine();
+
+                    while (!processSecond.HasExited)
+                    {
+                        Application.DoEvents();
+                        System.Threading.Thread.Sleep(50);
+                    }
                 }
             }
             catch (Exception ex2)
@@ -618,9 +755,97 @@ namespace DVDQCC
                 return;
             }
         }
+
+        private double GetVideoDurationSeconds(string ffmpegExeLocation, string inputVideoPath)
+        {
+            try
+            {
+                if (!File.Exists(inputVideoPath)) return 0;
+
+                ProcessStartInfo psi = new ProcessStartInfo(ffmpegExeLocation, $"-i \u0022{inputVideoPath}\u0022")
+                {
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+
+                using (Process p = Process.Start(psi))
+                {
+                    string output = p.StandardError.ReadToEnd();
+                    p.WaitForExit();
+
+                    int durationIndex = output.IndexOf("Duration:");
+                    if (durationIndex != -1)
+                    {
+                        int startIndex = durationIndex + "Duration:".Length;
+                        int endIndex = output.IndexOf(",", startIndex);
+                        if (endIndex != -1)
+                        {
+                            string timeStr = output.Substring(startIndex, endIndex - startIndex).Trim();
+
+                            TimeSpan totalTime;
+                            if (TimeSpan.TryParse(timeStr, out totalTime))
+                            {
+                                return totalTime.TotalSeconds;
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+
+        private string GetSubstringBetween(string text, string startDelim, string endDelim)
+        {
+            int startIndex = text.IndexOf(startDelim);
+            if (startIndex != -1)
+            {
+                startIndex += startDelim.Length;
+                int endIndex = text.IndexOf(endDelim, startIndex);
+                if (endIndex != -1)
+                {
+                    return text.Substring(startIndex, endIndex - startIndex).Trim();
+                }
+                return text.Substring(startIndex).Trim();
+            }
+            return string.Empty;
+        }
     }
 }
-public class IniFile   // revision 11
+
+[ComImport]
+[Guid("ea1afb91-9e28-4b86-90e9-9e9f8a5eefaf")]
+[InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+public interface ITaskbarList3
+{
+    void HrInit();
+    void AddTab(IntPtr hwnd);
+    void DeleteTab(IntPtr hwnd);
+    void ActivateTab(IntPtr hwnd);
+    void SetActiveAlt(IntPtr hwnd);
+    void MarkFullscreenWindow(IntPtr hwnd, [MarshalAs(UnmanagedType.Bool)] bool fFullscreen);
+
+    void SetProgressValue(IntPtr hwnd, ulong ullCompleted, ulong ullTotal);
+    void SetProgressState(IntPtr hwnd, TaskbarStates tbpFlags);
+}
+
+[ComImport]
+[Guid("56fdf344-fd6d-11d0-958a-006097c9a090")]
+[ClassInterface(ClassInterfaceType.None)]
+public class TaskbarInstance { }
+
+public enum TaskbarStates
+{
+    NoProgress = 0,
+    Indeterminate = 1,
+    Normal = 2,
+    Error = 4,
+    Paused = 8
+}
+
+public class IniFile
     {
         string Path;
         string EXE = Assembly.GetExecutingAssembly().GetName().Name;
