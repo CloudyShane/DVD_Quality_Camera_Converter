@@ -79,7 +79,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(960, 37);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Automated Conversion Tool from MOD (mpeg2) into MP4 (h264)";
+            this.label1.Text = "Automated MOD to MP4 Conversion + QTGMC Deinterlacing";
             this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // panel1
