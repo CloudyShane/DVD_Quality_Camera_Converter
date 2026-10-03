@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -444,6 +445,7 @@ namespace DVDQCC
 
         private void RunSinglefileWorkflow(string ffmpegExeLocation, string dgIndexLocation, string outputFolderName, string input_MOD_name, string input_MOD_for_later, string work_folder_temp, string currentfilenameDATE, string avs_filename, string ffmpeg_filename, string d2v_filename, string d2v_filename_we, string resulting_file)
         {
+            if (globalSettings.currentBatchFileNumber > 0) return;
             // DGIndex Command Execution
             try
             {
@@ -550,6 +552,8 @@ namespace DVDQCC
                     globalSettings.TotalBatchDurationSeconds = 0;
                     globalSettings.AlreadyEncodedDurationSeconds = 0;
 
+                    button_sdr7_go.Text = "Please Wait for Batch Conversion to Finish...";
+
                     foreach (var filePath in modFiles)
                     {
                         globalSettings.TotalBatchDurationSeconds += GetVideoDurationSeconds(ffmpeg_exe_location, filePath);
@@ -580,6 +584,7 @@ namespace DVDQCC
                         button_sdr7_batch_go.Refresh();
                         globalSettings.currentBatchFileNumber = 0;
                         globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                        button_sdr7_go.Text = "Begin Single-File Conversion";
                     }
                     else
                     {
@@ -588,6 +593,7 @@ namespace DVDQCC
                         button_sdr7_batch_go.Refresh();
                         globalSettings.currentBatchFileNumber = 0;
                         globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                        button_sdr7_go.Text = "Begin Single-File Conversion";
                     }
                 }
                 catch (UnauthorizedAccessException ex)
@@ -598,6 +604,7 @@ namespace DVDQCC
                     button_sdr7_batch_go.Refresh();
                     globalSettings.currentBatchFileNumber = 0;
                     globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                    button_sdr7_go.Text = "Begin Single-File Conversion";
                 }
                 catch (DirectoryNotFoundException ex)
                 {
@@ -607,6 +614,7 @@ namespace DVDQCC
                     button_sdr7_batch_go.Refresh();
                     globalSettings.currentBatchFileNumber = 0;
                     globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                    button_sdr7_go.Text = "Begin Single-File Conversion";
                 }
                 catch (Exception ex)
                 {
@@ -616,6 +624,7 @@ namespace DVDQCC
                     button_sdr7_batch_go.Refresh();
                     globalSettings.currentBatchFileNumber = 0;
                     globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                    button_sdr7_go.Text = "Begin Single-File Conversion";
                 }
             }
             else
@@ -626,6 +635,7 @@ namespace DVDQCC
                 button_sdr7_batch_go.Refresh();
                 globalSettings.currentBatchFileNumber = 0;
                 globalSettings.taskbarInstance.SetProgressState(this.Handle, TaskbarStates.NoProgress);
+                button_sdr7_go.Text = "Begin Single-File Conversion";
             }       
         }
 
