@@ -49,10 +49,15 @@
             this.sdr7_batch_source_file = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.panel3 = new System.Windows.Forms.Panel();
+            this.regionselectorPAL = new System.Windows.Forms.RadioButton();
+            this.regionselectorNTSC = new System.Windows.Forms.RadioButton();
+            this.panel2 = new System.Windows.Forms.Panel();
             this.aspectSelector43 = new System.Windows.Forms.RadioButton();
             this.aspectSelector169 = new System.Windows.Forms.RadioButton();
             this.button_set_dgindex_folder = new System.Windows.Forms.Button();
             this.button_set_ffmpeg_folder = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.button_save_settings = new System.Windows.Forms.Button();
             this.dgindex_loc_textbox = new System.Windows.Forms.TextBox();
@@ -62,6 +67,8 @@
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.panel3.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -260,10 +267,11 @@
             // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.aspectSelector43);
-            this.groupBox3.Controls.Add(this.aspectSelector169);
+            this.groupBox3.Controls.Add(this.panel3);
+            this.groupBox3.Controls.Add(this.panel2);
             this.groupBox3.Controls.Add(this.button_set_dgindex_folder);
             this.groupBox3.Controls.Add(this.button_set_ffmpeg_folder);
+            this.groupBox3.Controls.Add(this.label9);
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.button_save_settings);
             this.groupBox3.Controls.Add(this.dgindex_loc_textbox);
@@ -278,11 +286,51 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Settings";
             // 
+            // panel3
+            // 
+            this.panel3.Controls.Add(this.regionselectorPAL);
+            this.panel3.Controls.Add(this.regionselectorNTSC);
+            this.panel3.Location = new System.Drawing.Point(468, 92);
+            this.panel3.Name = "panel3";
+            this.panel3.Size = new System.Drawing.Size(156, 31);
+            this.panel3.TabIndex = 9;
+            // 
+            // regionselectorPAL
+            // 
+            this.regionselectorPAL.AutoSize = true;
+            this.regionselectorPAL.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.regionselectorPAL.Location = new System.Drawing.Point(3, 2);
+            this.regionselectorPAL.Name = "regionselectorPAL";
+            this.regionselectorPAL.Size = new System.Drawing.Size(63, 28);
+            this.regionselectorPAL.TabIndex = 7;
+            this.regionselectorPAL.Text = "PAL";
+            this.regionselectorPAL.UseVisualStyleBackColor = true;
+            // 
+            // regionselectorNTSC
+            // 
+            this.regionselectorNTSC.AutoSize = true;
+            this.regionselectorNTSC.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.regionselectorNTSC.Location = new System.Drawing.Point(73, 2);
+            this.regionselectorNTSC.Name = "regionselectorNTSC";
+            this.regionselectorNTSC.Size = new System.Drawing.Size(79, 28);
+            this.regionselectorNTSC.TabIndex = 8;
+            this.regionselectorNTSC.Text = "NTSC";
+            this.regionselectorNTSC.UseVisualStyleBackColor = true;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.aspectSelector43);
+            this.panel2.Controls.Add(this.aspectSelector169);
+            this.panel2.Location = new System.Drawing.Point(177, 92);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(129, 31);
+            this.panel2.TabIndex = 9;
+            // 
             // aspectSelector43
             // 
             this.aspectSelector43.AutoSize = true;
             this.aspectSelector43.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.aspectSelector43.Location = new System.Drawing.Point(182, 94);
+            this.aspectSelector43.Location = new System.Drawing.Point(3, 2);
             this.aspectSelector43.Name = "aspectSelector43";
             this.aspectSelector43.Size = new System.Drawing.Size(53, 28);
             this.aspectSelector43.TabIndex = 7;
@@ -293,7 +341,7 @@
             // 
             this.aspectSelector169.AutoSize = true;
             this.aspectSelector169.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.aspectSelector169.Location = new System.Drawing.Point(241, 94);
+            this.aspectSelector169.Location = new System.Drawing.Point(64, 2);
             this.aspectSelector169.Name = "aspectSelector169";
             this.aspectSelector169.Size = new System.Drawing.Size(63, 28);
             this.aspectSelector169.TabIndex = 8;
@@ -319,6 +367,16 @@
             this.button_set_ffmpeg_folder.Text = "Select";
             this.button_set_ffmpeg_folder.UseVisualStyleBackColor = true;
             this.button_set_ffmpeg_folder.Click += new System.EventHandler(this.button_set_ffmpeg_directory);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label9.Location = new System.Drawing.Point(320, 95);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(142, 24);
+            this.label9.TabIndex = 6;
+            this.label9.Text = "Camera Region";
             // 
             // label6
             // 
@@ -386,6 +444,10 @@
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            this.panel3.ResumeLayout(false);
+            this.panel3.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -421,6 +483,11 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.RadioButton aspectSelector43;
         private System.Windows.Forms.RadioButton aspectSelector169;
+        private System.Windows.Forms.Panel panel3;
+        private System.Windows.Forms.RadioButton regionselectorPAL;
+        private System.Windows.Forms.RadioButton regionselectorNTSC;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Label label9;
     }
 }
 
