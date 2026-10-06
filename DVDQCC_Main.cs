@@ -36,7 +36,7 @@ namespace DVDQCC
                 MyIni.Write("DGIndex Location", "C:\\TEMP\\dgindex.exe");
                 MyIni.Write("Aspect Ratio", "16:9");
                 MyIni.Write("Camera Region", "PAL");
-                MyIni.Write("CRF", "18");
+                MyIni.Write("CRF", "17");
                 globalSettings.h264_crf_string = "-crf " + globalSettings.h264_crf.ToString();
                 MyIni.Write("Last Single-File Source", "C:\\TEMP\\sdr7.mod");
                 MyIni.Write("Last Single-File Output", "C:\\TEMP\\");
@@ -64,8 +64,8 @@ namespace DVDQCC
                 }
                 else
                 {
-                    globalSettings.h264_crf = 18;
-                    MyIni.Write("CRF", "18");
+                    globalSettings.h264_crf = 17;
+                    MyIni.Write("CRF", "17");
                 }
                 globalSettings.h264_crf_string = "-crf " + globalSettings.h264_crf.ToString();
                 //Determine Aspect Ratio
@@ -107,7 +107,7 @@ namespace DVDQCC
 
         public static class globalSettings
         {
-            public static int h264_crf = 18;
+            public static int h264_crf = 17;
             public static string h264_crf_string = "-crf " + h264_crf.ToString();
             public static int currentBatchFileNumber = 0;
             public static int totalBatchFilesCount = 0;
@@ -377,7 +377,7 @@ namespace DVDQCC
 
         private string choose_aspect_ratio_and_region() //Only builds the string. Aspect ratio and region are being selected in "GenerateAVSscript" now.
         {
-            return " -map 1:a -map 0:v -c:v libx264 -pix_fmt yuv420p -preset slow " + globalSettings.h264_crf_string + " -strict -2 -c:a aac -b:a 512k ";
+            return " -map 1:a -map 0:v -c:v libx264 -pix_fmt yuv420p -preset slow " + globalSettings.h264_crf_string + " -vf" + "\u0022" + "setsar=1" +"\u0022" + " -strict -2 -c:a aac -b:a 512k ";
         }
 
         private string look_for_generated_audiofile(string filename)
