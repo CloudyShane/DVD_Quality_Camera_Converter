@@ -377,7 +377,7 @@ namespace DVDQCC
 
         private string choose_aspect_ratio_and_region() //Only builds the string. Aspect ratio and region are being selected in "GenerateAVSscript" now.
         {
-            return " -map 1:a -map 0:v -c:v libx264 -pix_fmt yuv420p -preset slow " + globalSettings.h264_crf_string + " -vf" + "\u0022" + "setsar=1" +"\u0022" + " -strict -2 -c:a aac -b:a 512k ";
+            return " -map 1:a -map 0:v -c:v libx264 -pix_fmt yuv420p -preset slow " + globalSettings.h264_crf_string + " -vf " + "\u0022" + "setsar=1" +"\u0022" + " -strict -2 -c:a aac -b:a 512k ";
         }
 
         private string look_for_generated_audiofile(string filename)
